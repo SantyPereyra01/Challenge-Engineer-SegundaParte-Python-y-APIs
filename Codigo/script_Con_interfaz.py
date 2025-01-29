@@ -4,6 +4,7 @@ import requests
 import csv
 import time
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Función para obtener los ítems por búsqueda
@@ -109,7 +110,7 @@ def execute_search():
 
     # Generar el nombre del archivo CSV basado en la búsqueda
     queries = [q.strip() for q in query.split(',')]
-    filename = "_".join([q.replace(" ", "_").lower() for q in queries]) + ".csv"
+    filename = "_".join([re.sub(r'[^\w\s-]', '', q.replace(" ", "_").lower()) for q in queries]) + ".csv"
     path_to_save_csv = os.path.join(path_to_save_directory, filename)
 
     # Obtener los ítems por búsqueda
