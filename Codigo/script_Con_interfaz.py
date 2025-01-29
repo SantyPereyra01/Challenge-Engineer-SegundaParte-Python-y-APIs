@@ -7,7 +7,7 @@ import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Función para obtener los ítems por búsqueda
+
 def get_items_by_search(query, limit=50):
     url = f"https://api.mercadolibre.com/sites/MLA/search?q={query}&limit={limit}"
     items = []
@@ -37,7 +37,7 @@ def get_items_by_search(query, limit=50):
     return items
 
 
-# Función para obtener los detalles del ítem
+
 def get_item_details(item_id):
     url = f"https://api.mercadolibre.com/items/{item_id}"
     response = requests.get(url)
@@ -62,16 +62,16 @@ def get_item_details(item_id):
         return None
 
 
-# Función para guardar los datos en un archivo CSV
+
 def save_to_csv(data, filename):
     if not data:
         print("No se encontraron datos para guardar.")
         return
 
-    # Crear el directorio si no existe
+
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     
-    # Guardar los datos en un archivo CSV
+
     keys = data[0].keys()
     with open(filename, 'w', newline='', encoding='utf-8') as output_file:
         dict_writer = csv.DictWriter(output_file, fieldnames=keys)
@@ -79,11 +79,11 @@ def save_to_csv(data, filename):
         dict_writer.writerows(data)
 
 
-# Función para obtener los detalles de los ítems de manera paralela
+
 def fetch_item_details_parallel(item_ids):
     all_item_details = []
 
-    with ThreadPoolExecutor(max_workers=10) as executor:  # Número de hilos concurrentes
+    with ThreadPoolExecutor(max_workers=10) as executor:  
         futures = {executor.submit(get_item_details, item_id): item_id for item_id in item_ids}
         
         for future in as_completed(futures):
@@ -94,26 +94,24 @@ def fetch_item_details_parallel(item_ids):
     return all_item_details
 
 
-# Función para ejecutar la lógica principal con la interfaz gráfica
+
 def execute_search():
-    # Obtener los términos de búsqueda ingresados por el usuario
+  
     query = entry_query.get()
     if not query:
         messagebox.showerror("Error", "Por favor, ingrese al menos un término de búsqueda.")
         return
 
-    # Obtener la ruta donde guardar el archivo CSV
+
     path_to_save_directory = entry_directory.get()
     if not path_to_save_directory:
         messagebox.showerror("Error", "Por favor, seleccione una ruta de directorio.")
         return
 
-    # Generar el nombre del archivo CSV basado en la búsqueda
     queries = [q.strip() for q in query.split(',')]
     filename = "_".join([re.sub(r'[^\w\s-]', '', q.replace(" ", "_").lower()) for q in queries]) + ".csv"
     path_to_save_csv = os.path.join(path_to_save_directory, filename)
 
-    # Obtener los ítems por búsqueda
     all_items = {}
     for query in queries:
         item_ids = get_items_by_search(query)
@@ -125,7 +123,7 @@ def execute_search():
         item_details_batch = fetch_item_details_parallel(item_ids)
         all_item_details.extend(item_details_batch)
 
-    # Guardar los resultados en un archivo CSV en la ruta definida
+
     if all_item_details:
         save_to_csv(all_item_details, path_to_save_csv)
         messagebox.showinfo("Éxito", f"Los detalles de los productos fueron guardados en '{path_to_save_csv}'.")
@@ -133,19 +131,17 @@ def execute_search():
         messagebox.showwarning("Aviso", "No se obtuvieron detalles de los productos.")
 
 
-# Función para abrir el cuadro de diálogo para seleccionar el directorio
 def browse_directory():
-    directory = filedialog.askdirectory()  # Abrir diálogo para seleccionar directorio
-    entry_directory.delete(0, tk.END)  # Limpiar el campo
-    entry_directory.insert(0, directory)  # Mostrar la ruta seleccionada en el campo de entrada
+    directory = filedialog.askdirectory()  
+    entry_directory.delete(0, tk.END) 
+    entry_directory.insert(0, directory)  
 
 
-# Crear la interfaz gráfica con Tkinter
+
 root = tk.Tk()
 root.title("Búsqueda de productos en MercadoLibre")
-root.geometry("600x300")  # Tamaño de la ventana
+root.geometry("600x300") 
 
-# Etiquetas y campos de entrada
 label_query = tk.Label(root, text="Ingrese los términos de búsqueda (separados por comas):")
 label_query.pack(pady=10)
 
@@ -161,9 +157,8 @@ entry_directory.pack(pady=5)
 browse_button = tk.Button(root, text="Buscar Directorio", command=browse_directory)
 browse_button.pack(pady=5)
 
-# Botón para ejecutar la búsqueda
+
 search_button = tk.Button(root, text="Ejecutar Búsqueda", command=execute_search)
 search_button.pack(pady=20)
 
-# Iniciar la interfaz
 root.mainloop()
